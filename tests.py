@@ -1,4 +1,5 @@
 from typing import Callable
+import time
 from pocket_cube.cube import Cube, Move
 
 case1 = "R U' R' F' U"
@@ -27,7 +28,7 @@ def is_solved(cube: Cube) -> bool:
             return False
     return True
 
-def test(algorithm: Callable[[Cube], list[Move]], tests: list[list[Move]]) -> bool:
+def test(algorithm: Callable[[Cube], list[Move]], tests: list[list[Move]], log: bool = True) -> list[tuple[bool, float, int, int]]:
     """
     Tests the algorithm with the given tests.
 
@@ -36,17 +37,23 @@ def test(algorithm: Callable[[Cube], list[Move]], tests: list[list[Move]]) -> bo
         tests (list[list[Move]]): The tests to run.
 
     Returns:
-        bool: True if all tests passed, False otherwise.
+        list[tuple[float, int, int]]: The time taken, the number of states expanded and the length of the path for each test.
     """
-    passed: bool = True
+    res: list[tuple[bool, float, int, int]] = []
     for idx, test in enumerate(tests):
+        success: bool = True
         cube: Cube = Cube(test)
-        path: list[Move] = algorithm(cube)
+        start = time.time()
+        (path, states) = algorithm(cube)
+        end = time.time()
         for move in path:
             cube = cube.move(move)
         if not is_solved(cube):
-            print(f"Test {idx} failed")
-            passed = False
+            if log:
+                print(f"Test {idx} failed. Time: {end - start} seconds. States expanded: {states}. Path length: {len(path)}")
+            success = False
         else:
-            print(f"Test {idx} passed")
-    return passed
+            if log:
+                print(f"Test {idx} passed. Time: {end - start} seconds. States expanded: {states}. Path length: {len(path)}")
+        res.append((success, end - start, states, len(path)))
+    return res
