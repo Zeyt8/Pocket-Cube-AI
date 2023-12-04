@@ -1,6 +1,6 @@
 from pocket_cube.cube import Cube, Move
 
-FrontierItem = tuple[int, str, Cube]
+FrontierItem = tuple[int, int, str, Cube]
 DiscoveredDict = dict[str, tuple[str, Move, int]]
 
 def get_neighbors(cube: Cube) -> list[tuple[Cube, Move]]:

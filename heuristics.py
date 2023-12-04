@@ -20,18 +20,6 @@ def hamming(cube: Cube) -> int:
     """
     return np.sum(cube.state != cube.goal_state)
 
-def inverse_hamming(cube: Cube) -> int:
-    """
-    Returns the number of pieces that are in the correct position.
-    Not admisible.
-
-    Args:
-        cube (Cube): The cube to evaluate.
-
-    Returns:
-        int: The number of pieces that are in the correct position.
-    """
-    return 24 - hamming(cube)
 
 def blocked_hamming(cube: Cube) -> int:
     """
@@ -50,18 +38,6 @@ def blocked_hamming(cube: Cube) -> int:
                 res += 1
                 break
     return res * 4
-
-def blocked_inverse_hamming(cube: Cube) -> int:
-    """
-    Returns the number of faces that are in the correct position, multiplied by 4.
-
-    Args:
-        cube (Cube): The cube to evaluate.
-
-    Returns:
-        int: The number of faces that are in the correct position, multiplied by 4.
-    """
-    return 24 - blocked_hamming(cube)
 
 def __distance_to_correct_face(cube: Cube, square: int):
     """
@@ -99,18 +75,6 @@ def manhattan(cube: Cube) -> int:
             distance: int = __distance_to_correct_face(cube, i)
             max_distance = max(max_distance, distance)
     return max_distance
-
-def inverse_manhattan(cube: Cube) -> int:
-    """
-    Returns the sum of the distances from each square to the correct face, subtracted from the maximum.
-
-    Args:
-        cube (Cube): The cube to evaluate.
-
-    Returns:
-        int: The sum of the distances from each square to the correct face, subtracted from the maximum.
-    """
-    return 2 - manhattan(cube)
 
 def build_database(max_depth: int = 7) -> dict[str, int]:
     """
