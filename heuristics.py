@@ -1,5 +1,8 @@
 from pocket_cube.cube import Cube
+from pocket_cube.cube import Move
+from utils import get_neighbors
 import numpy as np
+from typing import Callable
 
 # neighbours of a certain square considering rotations as moves
 square_neighbours = [[1,3,4,5], [0,2,4,5], [1,4,3,5], [0,2,4,5], [0,1,2,3], [0,1,2,3]]
@@ -90,14 +93,12 @@ def manhattan(cube: Cube) -> int:
     Returns:
         int: The sum of the distances from each square to the correct face.
     """
-    res: int = 0
+    max_distance: int = 0
     for face in range(6):
-        max_distance: int = 0
         for i in range(face * 4, face * 4 + 4):
             distance: int = __distance_to_correct_face(cube, i)
             max_distance = max(max_distance, distance)
-        res += max_distance
-    return res
+    return max_distance
 
 def inverse_manhattan(cube: Cube) -> int:
     """
@@ -109,4 +110,40 @@ def inverse_manhattan(cube: Cube) -> int:
     Returns:
         int: The sum of the distances from each square to the correct face, subtracted from the maximum.
     """
-    return 12 - manhattan(cube)
+    return 2 - manhattan(cube)
+
+def build_database(max_depth: int = 7) -> dict[str, int]:
+    """
+    Builds a database of the distance to the solved state for each state with a depth lower than max_depth.
+
+    Args:
+        max_depth (int, optional): The maximum depth to search. Defaults to 7.
+
+    Returns:
+        dict[str, int]: The database.
+    """
+    database: dict[str, int] = {}
+    frontier: list[tuple[Cube, int]] = [(Cube(), 0)]
+    while frontier:
+        (cube, depth) = frontier.pop()
+        if cube.hash() not in database or database[cube.hash()] > depth:
+            database[cube.hash()] = depth
+            if depth < max_depth:
+                for (neighbor, _) in get_neighbors(cube):
+                    frontier.append((neighbor, depth + 1))
+    return database
+
+def database_heuristic(cube: Cube, database: dict[str, int], default_heuristic: Callable[[Cube], int]) -> int:
+    """
+    Returns a heuristic function that uses the databse heuristic if the entry exists, and the default heuristic otherwise.
+
+    Args:
+        default_heuristic (Callable[[Cube], int]): The default heuristic.
+
+    Returns:
+        int: The heuristic value.
+    """
+    if cube.hash() in database:
+        return database[cube.hash()]
+    else:
+        return default_heuristic(cube)
