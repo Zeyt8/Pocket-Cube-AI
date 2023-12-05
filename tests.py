@@ -77,7 +77,7 @@ def test_mcts(algorithm: Callable[[Cube, int, float, Callable[[Cube], int]], tup
                     for result in test_results:
                         if result[i][0]:
                             no_passed += 1
-                            test_result += (result[i][1], result[i][2], result[i][3])
+                            test_result = (test_result[0] + result[i][1], test_result[1] + result[i][2], test_result[2] + result[i][3])
                     if (no_passed == 0):
                         print(f"Test {i} failed.")
                         test_results_averaged.append((False, 0, 0, 0))
