@@ -3,6 +3,7 @@ import time
 from pocket_cube.cube import Cube, Move
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import numpy as np
 
 case1 = "R U' R' F' U"
 case2 = "F' R U R U F' U'"
@@ -27,10 +28,7 @@ def is_solved(cube: Cube) -> bool:
     Returns:
         bool: True if the cube is solved, False otherwise.
     """
-    for i in range(0, len(cube.state), 4):
-        if cube.state[i] != cube.state[i + 1] or cube.state[i] != cube.state[i + 2] or cube.state[i] != cube.state[i + 3]:
-            return False
-    return True
+    return np.array_equal(cube.state, cube.goal_state)
 
 def test(algorithm: Callable[[Cube], tuple[list[Move], int]], tests: list[list[Move]], log: bool = True) -> list[TestCase]:
     """
@@ -62,7 +60,7 @@ def test(algorithm: Callable[[Cube], tuple[list[Move], int]], tests: list[list[M
         res.append((success, end - start, states, len(path)))
     return res
 
-def test_mtcs(algorithm: Callable[[Cube, int, float, Callable[[Cube], int]], tuple[list[Move], int]], heuristic_list: list[Callable[[Cube], int]]) -> None:
+def test_mcts(algorithm: Callable[[Cube, int, float, Callable[[Cube], int]], tuple[list[Move], int]], heuristic_list: list[Callable[[Cube], int]]) -> None:
     for heuristic in heuristic_list:
         for c in [0.1, 0.5]:
             for budget in [1000, 5000, 10000, 20000]:

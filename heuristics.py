@@ -1,11 +1,24 @@
 from pocket_cube.cube import Cube
 from pocket_cube.cube import Move
 from utils import get_neighbors
+from tests import test_list
 import numpy as np
 from typing import Callable
 
 # neighbours of a certain square considering rotations as moves
 square_neighbours = [[1,3,4,5], [0,2,4,5], [1,4,3,5], [0,2,4,5], [0,1,2,3], [0,1,2,3]]
+
+def is_admissible(astar: Callable[[Cube], tuple[list[Move], int]],
+                 bfs: Callable[[Cube], tuple[list[Move], int]],
+                 heuristic: Callable[[Cube], int]) -> bool:
+    for _ in range(0, 100):
+        for test in test_list:
+            cube = Cube(test)
+            (path_astar, _) = astar(cube, heuristic)
+            (path_bfs, _) = bfs(cube)
+            if len(path_astar) < len(path_bfs):
+                return False
+    return True
 
 def hamming(cube: Cube) -> int:
     """
@@ -71,10 +84,9 @@ def manhattan(cube: Cube) -> int:
     """
     max_distance: int = 0
     for face in range(6):
-        for i in range(face * 4, face * 4 + 4):
-            distance: int = __distance_to_correct_face(cube, i)
-            max_distance = max(max_distance, distance)
-    return max_distance
+        for i in range(4):
+            max_distance += __distance_to_correct_face(cube, face * 4 + i)
+    return max_distance / 8
 
 def build_database(max_depth: int = 7) -> dict[str, int]:
     """
@@ -87,7 +99,9 @@ def build_database(max_depth: int = 7) -> dict[str, int]:
         dict[str, int]: The database.
     """
     database: dict[str, int] = {}
-    frontier: list[tuple[Cube, int]] = [(Cube(), 0)]
+    cube = Cube()
+    cube.state = cube.goal_state
+    frontier: list[tuple[Cube, int]] = [(cube, 0)]
     while frontier:
         (cube, depth) = frontier.pop()
         if cube.hash() not in database or database[cube.hash()] > depth:

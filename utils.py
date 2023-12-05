@@ -1,6 +1,15 @@
 from pocket_cube.cube import Cube, Move
+from dataclasses import dataclass, field
 
-FrontierItem = tuple[int, int, str, Cube]
+@dataclass(order=True)
+class FrontierItem:
+    priority: int
+    cube: Cube=field(compare=False)
+
+    def __init__(self, priority: int, cube: Cube):
+        self.priority = priority
+        self.cube = cube
+
 DiscoveredDict = dict[str, tuple[str, Move, int]]
 
 def get_neighbors(cube: Cube) -> list[tuple[Cube, Move]]:
