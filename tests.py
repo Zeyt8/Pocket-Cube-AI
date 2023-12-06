@@ -61,9 +61,10 @@ def test(algorithm: Callable[[Cube], tuple[list[Move], int]], tests: list[list[M
     return res
 
 def test_mcts(algorithm: Callable[[Cube, int, float, Callable[[Cube], int]], tuple[list[Move], int]], heuristic_list: list[Callable[[Cube], int]]) -> None:
-    for heuristic in heuristic_list:
-        for c in [0.1, 0.5]:
-            for budget in [1000, 5000, 10000, 20000]:
+    for c in [0.1, 0.5]:
+        for budget in [1000, 5000, 10000, 20000]:
+            test_results_for_compare = []
+            for heuristic in heuristic_list:
                 print(f"Heuristic: {heuristic.__name__} Budget: {budget}, c: {c}")
                 test_results: list[list[TestCase]] = []
                 for _ in range(0, 20):
@@ -84,7 +85,9 @@ def test_mcts(algorithm: Callable[[Cube, int, float, Callable[[Cube], int]], tup
                     else:
                         print(f"Accuracy: {no_passed / len(test_results) * 100}%. Test {i} average: Time: {test_result[0] / no_passed} seconds. States expanded: {test_result[1] / no_passed}. Path length: {test_result[2] / no_passed}")
                         test_results_averaged.append((True, test_result[0] / no_passed, test_result[1] / no_passed, test_result[2] / no_passed))
+                test_results_for_compare.append(test_results_averaged)
                 draw_graph(test_results_averaged)
+            draw_comparison_graph(test_results_for_compare[0], test_results_for_compare[1], heuristic_list[0].__name__, heuristic_list[1].__name__)
 
 def draw_graph(test_cases: list[TestCase]) -> None:
     # time plot
@@ -113,4 +116,43 @@ def draw_graph(test_cases: list[TestCase]) -> None:
     ax.set_xlabel("Test")
     ax.set_ylabel("Path length")
     ax.set_title("Path length of each test")
+    plt.show()
+
+def draw_comparison_graph(test_cases1: list[TestCase], test_cases2: list[TestCase], label1, label2) -> None:
+    # draw graph similar to the ones in draw_graph, but make it a comparison graph by using 2 columns per x value, one for each test case
+    # time plot
+    fig, ax = plt.subplots()
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    bars1 = ax.bar(np.arange(len(test_cases1))-0.2, [test_case[1] for test_case in test_cases1], width=0.4, label=label1)
+    bars2 = ax.bar(np.arange(len(test_cases2))+0.2, [test_case[1] for test_case in test_cases2], width=0.4, label=label2)
+    ax.bar_label(bars1)
+    ax.bar_label(bars2)
+    ax.set_xlabel("Test")
+    ax.set_ylabel("Time")
+    ax.set_title("Time taken by each test")
+    plt.legend()
+    plt.show()
+    # same for states expanded
+    fig, ax = plt.subplots()
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    bars1 = ax.bar(np.arange(len(test_cases1))-0.2, [test_case[2] for test_case in test_cases1], width=0.4, label=label1)
+    bars2 = ax.bar(np.arange(len(test_cases2))+0.2, [test_case[2] for test_case in test_cases2], width=0.4, label=label2)
+    ax.bar_label(bars1)
+    ax.bar_label(bars2)
+    ax.set_xlabel("Test")
+    ax.set_ylabel("States expanded")
+    ax.set_title("States expanded by each test")
+    plt.legend()
+    plt.show()
+    # same for path length
+    fig, ax = plt.subplots()
+    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    bars1 = ax.bar(np.arange(len(test_cases1))-0.2, [test_case[3] for test_case in test_cases1], width=0.4, label=label1)
+    bars2 = ax.bar(np.arange(len(test_cases2))+0.2, [test_case[3] for test_case in test_cases2], width=0.4, label=label2)
+    ax.bar_label(bars1)
+    ax.bar_label(bars2)
+    ax.set_xlabel("Test")
+    ax.set_ylabel("Path length")
+    ax.set_title("Path length of each test")
+    plt.legend()
     plt.show()
